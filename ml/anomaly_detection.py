@@ -2,13 +2,14 @@
 import psycopg2
 import pandas as pd
 from sklearn.ensemble import IsolationForest
+import os
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5433,
-    "dbname": "cryptoflow",
-    "user": "cryptoflow",
-    "password": "cryptoflow"
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "5433")),
+    "dbname": os.getenv("DB_NAME", "cryptoflow"),
+    "user": os.getenv("DB_USER", "cryptoflow"),
+    "password": os.getenv("DB_PASSWORD", "cryptoflow"),
 }
 
 

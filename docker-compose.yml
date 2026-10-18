@@ -63,5 +63,40 @@ services:
       - /opt/cryptoflow/app/streaming.py
     restart: on-failure
 
+  airflow:
+    image: apache/airflow:2.10.5
+    container_name: cryptoflow-airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW_HOME: /opt/airflow
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__WEBSERVER__SECRET_KEY: cryptoflow-local-development-key
+      PYTHONPATH: /opt/airflow/project/ml
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: cryptoflow
+      DB_USER: cryptoflow
+      DB_PASSWORD: cryptoflow
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./:/opt/airflow/project
+    command: >
+      bash -c "pip install --no-cache-dir psycopg2-binary pandas scikit-learn &&
+      airflow db migrate &&
+      (airflow users create --username admin --password admin
+      --firstname Crypto --lastname Flow --role Admin
+      --email admin@example.com || true) &&
+      (airflow scheduler &) &&
+      exec airflow webserver"
+    restart: unless-stopped
+
 volumes:
   postgres_data:
