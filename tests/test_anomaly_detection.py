@@ -59,3 +59,39 @@ def test_valid_data_commits_transaction(mock_connect, capsys):
     connection.commit.assert_called_once()
     connection.close.assert_called_once()
     assert "Records analyzed: 30" in capsys.readouterr().out
+
+
+@patch("ml.anomaly_detection.psycopg2.connect")
+def test_database_error_rolls_back(mock_connect):
+    connection = MagicMock()
+    mock_connect.return_value = connection
+
+    data = pd.DataFrame({
+        "id": range(30),
+        "symbol": ["BTCUSDT"] * 30,
+        "price": [100 + i for i in range(30)],
+        "volume": [1000 + i * 10 for i in range(30)],
+        "event_time": pd.date_range(
+            "2026-01-01", periods=30, freq="min"
+        ),
+    })
+
+    connection.cursor.return_value.__enter__.return_value.execute.side_effect = (
+        Exception("Insert failed")
+    )
+
+    with patch(
+        "ml.anomaly_detection.pd.read_sql_query",
+        return_value=data,
+    ), patch(
+        "ml.anomaly_detection.IsolationForest.fit_predict",
+        return_value=[1] * 28 + [-1],
+    ), patch(
+        "ml.anomaly_detection.IsolationForest.decision_function",
+        return_value=[0.1] * 28 + [-0.1],
+    ):
+        with pytest.raises(Exception, match="Insert failed"):
+            detect_anomalies()
+
+    connection.rollback.assert_called_once()
+    connection.close.assert_called_once()
