@@ -147,12 +147,11 @@ try:
     )
     st.plotly_chart(chart, width="stretch")
     st.subheader("🤖 ML Anomaly Alerts")
+    
+    chart.update_layout(hovermode="x unified")
+    st.plotly_chart(chart, width="stretch", key="price_chart")
 
-
-   chart.update_layout(hovermode="x unified")
-st.plotly_chart(chart, width="stretch", key="price_chart")
-
-st.subheader("🤖 ML Anomaly Alerts")
+    st.subheader("🤖 ML Anomaly Alerts")
     if anomalies.empty:
         st.info("No anomaly records found yet.")
     else:
