@@ -145,13 +145,14 @@ try:
         xaxis_title="Time",
         yaxis_title="Price (USDT)"
     )
-    st.plotly_chart(chart, width="stretch")
-    st.subheader("🤖 ML Anomaly Alerts")
-    
+    st.subheader("📈 Price History")
+
     chart.update_layout(hovermode="x unified")
     st.plotly_chart(chart, width="stretch", key="price_chart")
 
     st.subheader("🤖 ML Anomaly Alerts")
+
+# Keep your existing anomaly-query and alert-display code here.
     if anomalies.empty:
         st.info("No anomaly records found yet.")
     else:
