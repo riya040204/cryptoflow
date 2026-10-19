@@ -16,13 +16,33 @@ st_autorefresh(interval=5000, key="cryptoflow_refresh")
 st.title("₿ CryptoFlow Intelligence")
 st.caption("Real-time cryptocurrency streaming analytics")
 
-DB_CONFIG = {
-    "host": "localhost",
-    "port": 5433,
-    "dbname": "cryptoflow",
-    "user": "cryptoflow",
-    "password": "cryptoflow"
-}
+
+
+import os
+
+def get_db_config():
+    if "database" in st.secrets:
+        db = st.secrets["database"]
+        return {
+            "host": db["host"],
+            "port": int(db.get("port", 5432)),
+            "dbname": db["dbname"],
+            "user": db["user"],
+            "password": db["password"],
+            "sslmode": "require",
+        }
+
+    return {
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", "5433")),
+        "dbname": os.getenv("DB_NAME", "cryptoflow"),
+        "user": os.getenv("DB_USER", "cryptoflow"),
+        "password": os.getenv("DB_PASSWORD", "cryptoflow"),
+    }
+
+DB_CONFIG = get_db_config()
+
+
 
 
 @st.cache_data(ttl=5)
