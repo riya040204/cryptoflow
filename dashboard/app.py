@@ -29,12 +29,15 @@ DB_CONFIG = {
 def load_data():
     connection = psycopg2.connect(**DB_CONFIG)
     try:
+        
         query = """
             SELECT symbol, price, volume, event_time
             FROM crypto_prices
+            WHERE event_time >= NOW() - INTERVAL '2 hours'
             ORDER BY event_time DESC
             LIMIT 500
         """
+
         return pd.read_sql_query(query, connection)
     finally:
         connection.close()
@@ -102,11 +105,13 @@ try:
 
     st.subheader("Price History")
 
+    
     chart = px.line(
         data,
         x="event_time",
         y="price",
         color="symbol",
+        markers=True,
         title="Cryptocurrency Price Over Time",
         labels={
             "event_time": "Time",
@@ -114,6 +119,15 @@ try:
             "symbol": "Asset"
         }
     )
+
+    chart.update_layout(
+        hovermode="x unified",
+        xaxis_title="Time",
+        yaxis_title="Price (USDT)"
+    )
+    st.plotly_chart(chart, width="stretch")
+    st.subheader("🤖 ML Anomaly Alerts")
+
 
     chart.update_layout(hovermode="x unified")
     st.plotly_chart(chart, use_container_width=True)
