@@ -49,6 +49,10 @@ services:
     build:
       context: ./spark
     container_name: cryptoflow-spark
+    environment:
+      NEON_JDBC_URL: "jdbc:postgresql://${NEON_HOST}/neondb?sslmode=require"
+      NEON_USER: "${NEON_USER}"
+      NEON_PASSWORD: "${NEON_PASSWORD}"
     depends_on:
       kafka:
         condition: service_healthy

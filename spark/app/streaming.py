@@ -1,4 +1,6 @@
 
+import os
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     col, from_json, to_timestamp, from_unixtime
@@ -51,6 +53,7 @@ parsed = (
     .withColumn("exchange", col("symbol"))
 )
 
+
 def save_to_postgres(batch_df, batch_id):
     if batch_df.isEmpty():
         return
@@ -62,14 +65,12 @@ def save_to_postgres(batch_df, batch_id):
     (
         output.write
         .format("jdbc")
-        .option(
-            "url",
-            "jdbc:postgresql://postgres:5432/cryptoflow"
-        )
+        .option("url", os.environ["NEON_JDBC_URL"])
         .option("dbtable", "crypto_prices")
-        .option("user", "cryptoflow")
-        .option("password", "cryptoflow")
+        .option("user", os.environ["NEON_USER"])
+        .option("password", os.environ["NEON_PASSWORD"])
         .option("driver", "org.postgresql.Driver")
+        .option("sslmode", "require")
         .mode("append")
         .save()
     )
